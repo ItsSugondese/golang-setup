@@ -1,0 +1,7 @@
+#{
+#  "hello": "Hello!",
+#  "welcome": "Welcome to my app!"
+#}
+hello= "Hello!"
+welcome= "Welcome to my app!"
+api.operation= "{{.First}} has been {{.Second}} successfully"
