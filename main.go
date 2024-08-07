@@ -9,6 +9,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"log"
 	_ "wabustock/docs"
+	generic_models "wabustock/generics/generic-models"
 	"wabustock/initializers"
 	"wabustock/internal/auth"
 	temporary_attachments "wabustock/internal/temporary-attachments"
@@ -27,7 +28,7 @@ func init() {
 	db := database.ConnectToDB()
 	db.AutoMigrate(&temporary_attachments.TemporaryAttachments{})
 
-	//db.AutoMigrate(&user.BaseUser{}, &generic_models.AuditModel{})
+	db.AutoMigrate(&user.BaseUser{}, &generic_models.AuditModel{})
 
 	// Register the audit log callbacks and perform migrations
 	errVal := audit_middleware.RegisterCallbacks(db)

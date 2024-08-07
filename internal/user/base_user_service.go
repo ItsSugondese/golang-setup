@@ -1,31 +1,45 @@
 package user
 
 import (
-	"net/http"
-	"wabustock/pkg/utils"
-	dto_utils "wabustock/pkg/utils/dto-utils"
-
+	"database/sql"
 	"github.com/google/uuid"
+	"net/http"
+	"wabustock/enums/struct-enums/project_module"
+	temporary_attachments "wabustock/internal/temporary-attachments"
+	"wabustock/pkg/utils"
 )
 
 func SaveBaseUserService(dto UserRequest) BaseUser {
-	//attachment := temporary_attachments.FindByIdService(dto.FileId)
 
 	var response BaseUser
-
 	if dto.ID != uuid.Nil {
 		response = FindUserByIdService(dto.ID)
 	}
 
-	dto_utils.NullAwareMapDtoConvertor(dto, &response)
+	response.PhoneNumber = dto.PhoneNumber
+	if dto.FileId != uuid.Nil {
+		attachment := temporary_attachments.FindByIdService(dto.FileId)
+		filePath := utils.CopyFileToServer(attachment.Location, project_module.ModuleNameEnums.BASE_USER)
+		response.ProfilePath = sql.NullString{
+			String: filePath,
+			Valid:  filePath != "",
+		}
+	}
 
-	return response
+	usr, err := SaveBaseUser(response)
+
+	if err != nil {
+		panic("Error while saving base user: " + err.Error())
+	}
+	//dto_utils.NullAwareMapDtoConvertor(dto, &response)
+
+	return usr
 }
 
 func GetUserImageService(id uuid.UUID, w http.ResponseWriter) {
 	userDetails := FindUserByIdService(id)
 
-	utils.GetFileFromFilePath(userDetails.ProfilePath, w)
+	utils.GetFileFromFilePath(userDetails.ProfilePath.String, w)
 
 }
 
