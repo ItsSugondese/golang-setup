@@ -16,7 +16,6 @@ import (
 	"wabustock/pkg/common/database"
 	"wabustock/pkg/common/localization"
 	"wabustock/pkg/middleware"
-	audit_middleware "wabustock/pkg/middleware/audit-middleware"
 	cors_middleware "wabustock/pkg/middleware/cors-middleware"
 	lang_middleware "wabustock/pkg/middleware/lang-middleware"
 )
@@ -30,10 +29,10 @@ func init() {
 	db.AutoMigrate(&user.BaseUser{}, &generic_models.AuditModel{})
 
 	// Register the audit log callbacks and perform migrations
-	errVal := audit_middleware.RegisterCallbacks(db)
-	if errVal != nil {
-		panic("failed to register audit log callbacks")
-	}
+	//errVal := audit_middleware.RegisterCallbacks(db)
+	//if errVal != nil {
+	//	panic("failed to register audit log callbacks")
+	//}
 
 }
 

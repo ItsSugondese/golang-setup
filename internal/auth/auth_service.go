@@ -23,7 +23,7 @@ func loginUser(authRequest AuthRequest) (AuthResponse, error) {
 		return AuthResponse{}, err
 	}
 
-	err = utils.VerifyPassword(userDetails.Password.String, authRequest.Password)
+	err = utils.VerifyPassword(*userDetails.Password, authRequest.Password)
 	if err != nil {
 		return AuthResponse{}, err
 	}
@@ -35,8 +35,8 @@ func loginUser(authRequest AuthRequest) (AuthResponse, error) {
 
 	return AuthResponse{
 		Token:       token,
-		Role:        userDetails.Role.String,
-		PhoneNumber: userDetails.PhoneNumber,
+		Role:        *userDetails.Role,
+		PhoneNumber: *userDetails.PhoneNumber,
 	}, nil
 }
 
