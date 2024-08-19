@@ -30,7 +30,7 @@ func Test(c *gin.Context) {
 	//var userDto TestDto
 
 	generic_controller.GenericControllerSuccessResponseHandler(c,
-		localization.GetLocalizedMessage(c, localization_enums.MessageCodeEnums.API_OPERATION, map[string]interface{}{
+		localization.GetLocalizedMessage(localization_enums.MessageCodeEnums.API_OPERATION, map[string]interface{}{
 			"First":  project_module.ModuleNameEnums.BASE_USER,
 			"Second": response_crud_enum.Create(),
 		}), "hello there")

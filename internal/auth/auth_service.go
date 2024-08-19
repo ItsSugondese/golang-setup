@@ -6,6 +6,7 @@ import (
 	"time"
 	"wabustock/internal/user"
 	"wabustock/pkg/utils"
+	"wabustock/pkg/utils/token"
 )
 
 func LoginService(authRequest AuthRequest) (AuthResponse, error) {
@@ -28,14 +29,20 @@ func loginUser(authRequest AuthRequest) (AuthResponse, error) {
 		return AuthResponse{}, err
 	}
 
-	token, err := createToken(string(userDetails.ID.String()))
+	//token, err := createToken(string(userDetails.ID.String()))
+	token, err := token.TokenMaker.CreateToken(*userDetails.FullName, time.Hour)
 	if err != nil {
 		return AuthResponse{}, err
 	}
 
+	//return AuthResponse{
+	//	Token:       token,
+	//	Role:        *userDetails.Role,
+	//	PhoneNumber: *userDetails.PhoneNumber,
+	//}, nil
 	return AuthResponse{
 		Token:       token,
-		Role:        *userDetails.Role,
+		Role:        "",
 		PhoneNumber: *userDetails.PhoneNumber,
 	}, nil
 }

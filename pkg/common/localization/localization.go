@@ -2,11 +2,16 @@ package localization
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/pelletier/go-toml/v2"
 	"golang.org/x/text/language"
 )
+
+type LocalizationManager struct {
+	Localizer *i18n.Localizer
+}
+
+var GlobalLocalizationManager *LocalizationManager
 
 func InitBundle() *i18n.Bundle {
 	bundle := i18n.NewBundle(language.English)
@@ -18,14 +23,20 @@ func InitBundle() *i18n.Bundle {
 	return bundle
 }
 
-func GetLocalizedMessage(c *gin.Context, messageID string, templateData map[string]interface{}) string {
-	localizer, exists := c.Get("localizer")
-	if !exists {
+func GetLocalizedMessage(messageID string, templateData map[string]interface{}) string {
+	//localizer, exists := c.Get("localizer")
+	//if !exists {
+	//	panic("Localization error")
+	//}
+
+	localizer := GlobalLocalizationManager.Localizer
+
+	if localizer == nil {
 		panic("Localization error")
 	}
 
 	// Localize the message
-	localizedMessage, err := localizer.(*i18n.Localizer).Localize(&i18n.LocalizeConfig{
+	localizedMessage, err := localizer.Localize(&i18n.LocalizeConfig{
 		MessageID:    messageID,
 		TemplateData: templateData,
 		DefaultMessage: &i18n.Message{
@@ -39,4 +50,8 @@ func GetLocalizedMessage(c *gin.Context, messageID string, templateData map[stri
 	}
 
 	return localizedMessage
+}
+
+func InitLocalizationManager() {
+	GlobalLocalizationManager = &LocalizationManager{}
 }

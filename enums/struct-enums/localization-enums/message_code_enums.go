@@ -4,12 +4,14 @@ var MessageCodeEnums = newMessageCode()
 
 func newMessageCode() *messageCode {
 	return &messageCode{
-		SAVE:          "save",
-		API_OPERATION: "api.operation",
+		SAVE:              "save",
+		API_OPERATION:     "api.operation",
+		COLUMN_NOT_EXISTS: "column.not.exist",
 	}
 }
 
 type messageCode struct {
-	SAVE          string
-	API_OPERATION string
+	SAVE              string
+	API_OPERATION     string
+	COLUMN_NOT_EXISTS string
 }

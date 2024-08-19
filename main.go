@@ -7,29 +7,51 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"gorm.io/gorm"
 	"log"
+	tenant_constants "wabustock/constants/tenant-constants"
 	_ "wabustock/docs"
-	generic_models "wabustock/generics/generic-models"
 	"wabustock/initializers"
 	"wabustock/internal/auth"
+	"wabustock/internal/role"
 	temporary_attachments "wabustock/internal/temporary-attachments"
 	"wabustock/internal/user"
 	"wabustock/pkg/common/database"
 	"wabustock/pkg/common/localization"
+	"wabustock/pkg/common/tenant"
 	"wabustock/pkg/middleware"
 	audit_middleware "wabustock/pkg/middleware/audit-middleware"
 	cors_middleware "wabustock/pkg/middleware/cors-middleware"
 	lang_middleware "wabustock/pkg/middleware/lang-middleware"
 	tenant_middleware "wabustock/pkg/middleware/tenant-middleware"
+	"wabustock/pkg/utils/token"
 )
 
 func init() {
 	print("Here in init")
 	initializers.LoadEnvironments()
+	localization.InitLocalizationManager()
 	database.ConnectToDB()
+	migrateToPublicTenantError := tenant.MigrateTenantPublicTable(database.DB)
+	if migrateToPublicTenantError != nil {
+		panic(migrateToPublicTenantError)
+	}
+
+	schemaList, getSchemaError := database.GetAllSchemasRepo(database.DB)
+	if getSchemaError != nil {
+		panic(getSchemaError)
+	}
+
+	for _, schema := range schemaList {
+		if schema == tenant_constants.PublicTenant {
+			continue
+		}
+		migrateError := tenant.MigrateTenantTables(database.DB, tenant.Tenant{Name: schema})
+		if migrateError != nil {
+			return
+		}
+	}
 	//tenantPublic := generic_models.Tenant{
-	//	Name:       "Public",
+	//	ID:       "Public",
 	//	SchemaName: "public",
 	//}
 	//
@@ -41,7 +63,7 @@ func init() {
 	//	log.Fatal("Failed to migrate tenant tables:", err)
 	//}
 	//tenant := generic_models.Tenant{
-	//	Name:       "TenantA",
+	//	ID:       "TenantA",
 	//	SchemaName: "tenant_a_schema",
 	//}
 	//
@@ -68,6 +90,12 @@ func init() {
 func main() {
 	r := gin.Default()
 	validate := validator.New()
+	tokenMaker, err := token.NewPaseto("abcdefghijkl12345678901234567890")
+	if err != nil {
+		panic("Couldnt open tokenmaker " + err.Error())
+	}
+
+	token.TokenMaker = tokenMaker
 
 	// middlewares
 	r.Use(cors_middleware.CorsMiddleware())
@@ -95,6 +123,8 @@ func main() {
 	user.UserRoutes(r, validate)
 	auth.AuthRoutes(r, validate)
 	temporary_attachments.TempAttachmentsRoutes(r, validate)
+	tenant.TenantRoutes(r, validate)
+	role.RoleRoutes(r, validate)
 
 	log.Println("_____________")
 	// Serve static files from the images directory
@@ -124,42 +154,4 @@ func getLocalizedMessage(langTag string, bundle *i18n.Bundle) string {
 	})
 
 	return localizedMessage
-}
-
-// MigrateTenantTables migrates the necessary tables within the tenant schema
-func MigrateTenantTables(db *gorm.DB, tenant generic_models.Tenant) error {
-	if err := tenant_middleware.SetTenantSchema(db, tenant.SchemaName); err != nil {
-		return err
-	}
-
-	//Automigrate tenant-specific tables
-	if err := db.AutoMigrate(&temporary_attachments.TemporaryAttachments{}); err != nil { // Add more models as needed
-		return err
-	}
-
-	if err := db.AutoMigrate(&user.BaseUser{}, &generic_models.AuditModel{}); err != nil { // Add more models as needed
-		return err
-	}
-
-	return nil
-}
-
-func MigrateTenantPublicTable(db *gorm.DB, tenant generic_models.Tenant) error {
-	if err := tenant_middleware.SetTenantSchema(db, tenant.SchemaName); err != nil {
-		return err
-	}
-
-	//Automigrate tenant-specific tables
-	if err := db.AutoMigrate(&generic_models.Tenant{}); err != nil { // Add more models as needed
-		return err
-	}
-	return nil
-}
-
-func SaveTenantDetails(db *gorm.DB, tenant generic_models.Tenant) error {
-	if err := tenant_middleware.SetTenantSchema(db, "public"); err != nil {
-		return err
-	}
-	result := database.DB.Create(&tenant)
-	return result.Error
 }

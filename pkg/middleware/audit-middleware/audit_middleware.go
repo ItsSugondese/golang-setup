@@ -19,7 +19,8 @@ func RegisterCallbacks(db *gorm.DB) error {
 }
 
 func createAuditLog(db *gorm.DB) {
-	if db.Statement.Schema != nil && db.Statement.Schema.Table == "audit_logs" || db.Error != nil {
+	if db.Statement.Schema != nil && db.Statement.Schema.Table == "audit_logs" || db.Error != nil ||
+		db.Statement.Schema.Table == "user_role" {
 		return
 	}
 

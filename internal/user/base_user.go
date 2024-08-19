@@ -2,16 +2,17 @@ package user
 
 import (
 	generic_models "wabustock/generics/generic-models"
-	"wabustock/internal/auth"
+	"wabustock/internal/role"
 )
 
 type BaseUser struct {
 	generic_models.AuditModel
-	FullName           *string     `json:"fullName"`
-	Email              *string     `json:"email" gorm:"unique"`
-	PhoneNumber        *string     `json:"phoneNumber" gorm:"unique;not null"`
-	Password           *string     `json:"password"`
-	Role               []auth.Role `json:"role" gorm:"many2many:user_role;"`
+	FullName    *string `json:"fullName"`
+	Email       *string `json:"email" gorm:"unique"`
+	PhoneNumber *string `json:"phoneNumber" gorm:"unique;not null"`
+	Password    *string `json:"password"`
+	//Role        *string `json:"role" `
+	Roles              []role.Role `json:"role" gorm:"many2many:user_role;"`
 	ProfilePath        *string     `json:"profilePath"`
 	Address            *string     `json:"address"`
 	Gender             *string     `json:"gender"`

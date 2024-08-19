@@ -4,4 +4,5 @@
 #}
 hello= "Hello!"
 welcome= "Welcome to my app!"
-api.operation= "{{.First}} has been {{.Second}} successfully"
+api.operation= "{{.First}} has been {{.Second}} successfully."
+column.not.exist= "{{.First}} with that {{.Second}} doesn't exists."

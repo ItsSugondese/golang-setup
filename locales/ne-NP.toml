@@ -5,3 +5,4 @@
 hello= "Bonjour!"
 welcome= "Bienvenue sur mon appli!"
 api.operation= "{{.First}} chai successfully  {{.Second}} vayeko xa"
+column.not.exist= "{{.First}} tyo {{.Second}} exists gardaina."

@@ -5,6 +5,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"net/http"
 	"wabustock/enums/struct-enums/project_module"
+	"wabustock/internal/role"
 	temporary_attachments "wabustock/internal/temporary-attachments"
 	"wabustock/pkg/utils"
 )
@@ -12,18 +13,32 @@ import (
 func SaveBaseUserService(dto UserRequest) BaseUser {
 
 	var response BaseUser
+	mapstructure.Decode(dto, &response)
 	if dto.ID != uuid.Nil {
 		response = FindUserByIdService(dto.ID)
-	}
+	} else {
+		if dto.Role == nil {
+			panic("Specifying role is must.")
+		}
 
-	response.PhoneNumber = dto.PhoneNumber
+		getRole := role.FindRoleByIdService(dto.Role)
+		roles := []role.Role{getRole}
+		response.Roles = roles
+	}
 	if dto.FileId != uuid.Nil {
 		attachment := temporary_attachments.FindByIdService(dto.FileId)
 		filePath := utils.CopyFileToServer(attachment.Location, project_module.ModuleNameEnums.BASE_USER)
 		response.ProfilePath = &filePath
 	}
 
-	mapstructure.Decode(dto, &response)
+	if dto.Password != nil {
+		password, hashingPasswordError := utils.HashPassword(*dto.Password)
+		if hashingPasswordError != nil {
+			panic("error hashing password")
+		}
+		response.Password = &password
+	}
+
 	//dto_utils.NullAwareMapDtoConvertor(dto, &response)
 
 	var usr BaseUser
