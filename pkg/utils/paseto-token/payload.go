@@ -1,4 +1,4 @@
-package token
+package paseto_token
 
 import (
 	"errors"
@@ -9,7 +9,7 @@ import (
 
 type Payload struct {
 	ID        uuid.UUID `json:"id"`
-	Username  string    `json:"username"`
+	UserId    string    `json:"userId"`
 	CreatedAt time.Time `json:"created_at"`
 	ExpiryAt  time.Time `json:"expiry_at"`
 }
@@ -22,7 +22,7 @@ func NewPayload(username string, duration time.Duration) (*Payload, error) {
 
 	payload := &Payload{
 		ID:        tokenId,
-		Username:  username,
+		UserId:    username,
 		CreatedAt: time.Now(),
 		ExpiryAt:  time.Now().Add(duration),
 	}

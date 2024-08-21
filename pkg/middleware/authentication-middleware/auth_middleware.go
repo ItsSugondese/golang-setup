@@ -8,10 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// AuthMiddleware is a middleware function that checks for the presence of a valid token.
+// AuthMiddleware is a middleware function that checks for the presence of a valid paseto-token.
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Here you can add your authentication logic, e.g., checking for a token in the request header
+		// Here you can add your authentication logic, e.g., checking for a paseto-token in the request header
 		token := c.GetHeader("Authorization")
 
 		if token == "" || !verifyTokenService(token) {
@@ -20,7 +20,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// If the token is valid, proceed to the next handler
+		// If the paseto-token is valid, proceed to the next handler
 		c.Next()
 	}
 }

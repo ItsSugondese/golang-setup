@@ -30,13 +30,13 @@ func CreateToken(ttl time.Duration, payload interface{}, privateKey string) (str
 	token, err := jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(key)
 
 	if err != nil {
-		return "", fmt.Errorf("create: sign token: %w", err)
+		return "", fmt.Errorf("create: sign paseto-token: %w", err)
 	}
 
 	return token, nil
 }
 
-// ValidateToken validates the provided token using the given public key
+// ValidateToken validates the provided paseto-token using the given public key
 func ValidateToken(token string, publicKeyBase64 string) bool {
 	// Decode the base64-encoded public key
 	decodedPublicKey, err := base64.StdEncoding.DecodeString(publicKeyBase64)
@@ -50,7 +50,7 @@ func ValidateToken(token string, publicKeyBase64 string) bool {
 		panic(fmt.Sprintf("validate: parse key: %w", err))
 	}
 
-	// Parse and validate the token
+	// Parse and validate the paseto-token
 	parsedToken, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodRSA); !ok {
 			panic(fmt.Errorf("unexpected method: %s", t.Header["alg"]))
@@ -62,10 +62,10 @@ func ValidateToken(token string, publicKeyBase64 string) bool {
 		panic(fmt.Errorf("validate: %w", err))
 	}
 
-	// Check the token claims and validity
+	// Check the paseto-token claims and validity
 	_, ok := parsedToken.Claims.(jwt.MapClaims)
 	if !ok || !parsedToken.Valid {
-		panic("validate: invalid token")
+		panic("validate: invalid paseto-token")
 	}
 
 	return true

@@ -12,4 +12,6 @@ type AuditModel struct {
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 	IsActive  bool           `gorm:"default:true"`
+	CreatedBy *string
+	UpdatedBy *string
 }

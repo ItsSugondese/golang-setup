@@ -23,7 +23,7 @@ import (
 	cors_middleware "wabustock/pkg/middleware/cors-middleware"
 	lang_middleware "wabustock/pkg/middleware/lang-middleware"
 	tenant_middleware "wabustock/pkg/middleware/tenant-middleware"
-	"wabustock/pkg/utils/token"
+	"wabustock/pkg/utils/paseto-token"
 )
 
 func init() {
@@ -90,12 +90,12 @@ func init() {
 func main() {
 	r := gin.Default()
 	validate := validator.New()
-	tokenMaker, err := token.NewPaseto("abcdefghijkl12345678901234567890")
+	tokenMaker, err := paseto_token.NewPaseto("abcdefghijkl12345678901234567890")
 	if err != nil {
 		panic("Couldnt open tokenmaker " + err.Error())
 	}
 
-	token.TokenMaker = tokenMaker
+	paseto_token.TokenMaker = tokenMaker
 
 	// middlewares
 	r.Use(cors_middleware.CorsMiddleware())

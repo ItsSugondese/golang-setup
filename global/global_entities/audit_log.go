@@ -11,6 +11,7 @@ type AuditLog struct {
 	OperationType string         `json:"operation_type"`
 	ObjectId      string         `json:"object_id"`
 	Data          datatypes.JSON `json:"data"`
-	UserId        string         `json:"user_id"`
+	CreatedBy     string         `json:"created_by"`
+	UpdatedBy     *string        `json:"updated-by"`
 	CreatedAt     time.Time      `json:"created_at"`
 }

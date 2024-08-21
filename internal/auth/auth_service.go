@@ -6,7 +6,7 @@ import (
 	"time"
 	"wabustock/internal/user"
 	"wabustock/pkg/utils"
-	"wabustock/pkg/utils/token"
+	"wabustock/pkg/utils/paseto-token"
 )
 
 func LoginService(authRequest AuthRequest) (AuthResponse, error) {
@@ -29,14 +29,14 @@ func loginUser(authRequest AuthRequest) (AuthResponse, error) {
 		return AuthResponse{}, err
 	}
 
-	//token, err := createToken(string(userDetails.ID.String()))
-	token, err := token.TokenMaker.CreateToken(*userDetails.FullName, time.Hour)
+	//paseto-token, err := createToken(string(userDetails.ID.String()))
+	token, err := paseto_token.TokenMaker.CreateToken((userDetails.ID.String()), time.Hour)
 	if err != nil {
 		return AuthResponse{}, err
 	}
 
 	//return AuthResponse{
-	//	Token:       token,
+	//	Token:       paseto-token,
 	//	Role:        *userDetails.Role,
 	//	PhoneNumber: *userDetails.PhoneNumber,
 	//}, nil

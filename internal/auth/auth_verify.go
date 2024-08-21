@@ -1,5 +1,5 @@
 package auth
 
 type AuthVerify struct {
-	Token string `json:"token"`
+	Token string `json:"paseto-token"`
 }

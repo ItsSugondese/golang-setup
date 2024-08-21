@@ -14,7 +14,7 @@ func SaveBaseUser(user BaseUser) (BaseUser, error) {
 }
 func UpdateBaseUser(user BaseUser) (BaseUser, error) {
 	result := database.DB.Model(&user).
-		Updates(user)
+		Updates(&user)
 	return user, result.Error
 }
 

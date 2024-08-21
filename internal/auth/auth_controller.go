@@ -62,7 +62,7 @@ func TestPayload(c *gin.Context, validate *validator.Validate) {
 
 }
 
-// VerifyToken is a handler function that verifies the provided token
+// VerifyToken is a handler function that verifies the provided paseto-token
 //func VerifyToken(c *gin.Context) {
 //	var authVerify AuthVerify
 //	if err := c.ShouldBindJSON(&authVerify); err != nil {

@@ -1,4 +1,4 @@
-package token
+package paseto_token
 
 import (
 	"fmt"
@@ -9,8 +9,8 @@ import (
 )
 
 type PasetoMaker struct {
-	paseto       *paseto.V2
-	symmetricKey []byte
+	Paseto       *paseto.V2
+	SymmetricKey []byte
 }
 
 var TokenMaker *PasetoMaker
@@ -21,26 +21,26 @@ func NewPaseto(symmetricKey string) (*PasetoMaker, error) {
 	}
 
 	maker := &PasetoMaker{
-		paseto:       paseto.NewV2(),
-		symmetricKey: []byte(symmetricKey),
+		Paseto:       paseto.NewV2(),
+		SymmetricKey: []byte(symmetricKey),
 	}
 
 	return maker, nil
 }
 
-func (maker *PasetoMaker) CreateToken(username string, duration time.Duration) (string, error) {
-	payload, err := NewPayload(username, duration)
+func (maker *PasetoMaker) CreateToken(userId string, duration time.Duration) (string, error) {
+	payload, err := NewPayload(userId, duration)
 	if err != nil {
 		return "", err
 	}
 
-	return maker.paseto.Encrypt(maker.symmetricKey, payload, nil)
+	return maker.Paseto.Encrypt(maker.SymmetricKey, payload, nil)
 }
 
 func (maker *PasetoMaker) VerifyToken(token string) (*Payload, error) {
 	payload := &Payload{}
 
-	err := maker.paseto.Decrypt(token, maker.symmetricKey, payload, nil)
+	err := maker.Paseto.Decrypt(token, maker.SymmetricKey, payload, nil)
 	if err != nil {
 		return nil, err
 	}
