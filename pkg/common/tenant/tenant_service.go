@@ -87,3 +87,11 @@ func MigrateTenantPublicTable(db *gorm.DB) error {
 	}
 	return nil
 }
+
+func MigrateAll() error {
+	//Automigrate tenant-specific tables
+	if err := database.DB.AutoMigrate(&temporary_attachments.TemporaryAttachments{}, &user.BaseUser{}, &generic_models.AuditModel{}, &role.Role{}); err != nil { // Add more models as needed
+		return err
+	}
+	return nil
+}

@@ -57,6 +57,9 @@ func PasetoAuthMiddleware(maker paseto_token.PasetoMaker) gin.HandlerFunc {
 }
 
 func ExtractPasetoTokenFromHeader() (string, error) {
+	if global_gin_context.GlobalGinContext.Context == nil {
+		return "", errors.New("GinContext Context is nil")
+	}
 	authHeader := global_gin_context.GlobalGinContext.Context.GetHeader(authorizationHeaderKey)
 	if authHeader == "" {
 		return "", errors.New("No header was passed")

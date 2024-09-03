@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cloud.google.com/go/storage"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
@@ -8,8 +9,9 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"log"
-	tenant_constants "wabustock/constants/tenant-constants"
+	"os"
 	_ "wabustock/docs"
+	global_gin_context "wabustock/global/global-gin-context"
 	"wabustock/initializers"
 	"wabustock/internal/auth"
 	"wabustock/internal/role"
@@ -22,34 +24,45 @@ import (
 	audit_middleware "wabustock/pkg/middleware/audit-middleware"
 	cors_middleware "wabustock/pkg/middleware/cors-middleware"
 	lang_middleware "wabustock/pkg/middleware/lang-middleware"
-	tenant_middleware "wabustock/pkg/middleware/tenant-middleware"
+	"wabustock/pkg/utils"
 	"wabustock/pkg/utils/paseto-token"
+)
+
+const (
+	projectID  = "your-project-id"  // FILL IN WITH YOURS
+	bucketName = "blackpearlbucket" // FILL IN WITH YOURS
 )
 
 func init() {
 	print("Here in init")
 	initializers.LoadEnvironments()
 	localization.InitLocalizationManager()
+	global_gin_context.NewGlobalGinContext()
 	database.ConnectToDB()
-	migrateToPublicTenantError := tenant.MigrateTenantPublicTable(database.DB)
-	if migrateToPublicTenantError != nil {
-		panic(migrateToPublicTenantError)
-	}
+	tenant.MigrateAll()
 
-	schemaList, getSchemaError := database.GetAllSchemasRepo(database.DB)
-	if getSchemaError != nil {
-		panic(getSchemaError)
-	}
+	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "/home/lazybot/Desktop/continual-mind-432410-g5-df1fc7f32718.json") // FILL IN WITH YOUR FILE PATH
 
-	for _, schema := range schemaList {
-		if schema == tenant_constants.PublicTenant {
-			continue
-		}
-		migrateError := tenant.MigrateTenantTables(database.DB, tenant.Tenant{Name: schema})
-		if migrateError != nil {
-			return
-		}
-	}
+	//migrateToPublicTenantError := tenant.MigrateTenantPublicTable(database.DB)
+	//if migrateToPublicTenantError != nil {
+	//	panic(migrateToPublicTenantError)
+	//}
+	//
+	//schemaList, getSchemaError := database.GetAllSchemasRepo(database.DB)
+	//if getSchemaError != nil {
+	//	panic(getSchemaError)
+	//}
+	//
+	//for _, schema := range schemaList {
+	//	if schema == tenant_constants.PublicTenant {
+	//		continue
+	//	}
+	//	migrateError := tenant.MigrateTenantTables(database.DB, tenant.Tenant{Name: schema})
+	//	if migrateError != nil {
+	//		return
+	//	}
+	//}
+
 	//tenantPublic := generic_models.Tenant{
 	//	ID:       "Public",
 	//	SchemaName: "public",
@@ -95,13 +108,35 @@ func main() {
 		panic("Couldnt open tokenmaker " + err.Error())
 	}
 
+	// Initialize the Google Cloud Storage client using Gin's context.
+	r.Use(func(c *gin.Context) {
+		client, err := storage.NewClient(c.Request.Context())
+		if err != nil {
+			log.Fatalf("Failed to create storage client: %v", err)
+		}
+
+		// Store the client in Gin's context for use in handlers.
+		c.Set("storageClient", client)
+
+		utils.Uploader = &utils.ClientUploader{
+			Cl:         client,
+			BucketName: bucketName,
+			//ProjectID:  projectID,
+			UploadPath: "test-files/",
+		}
+		// Make sure to close the client after the request is processed.
+		defer client.Close()
+
+		c.Next()
+	})
+
 	paseto_token.TokenMaker = tokenMaker
 
 	// middlewares
 	r.Use(cors_middleware.CorsMiddleware())
 	r.Use(middleware.RecoveryMiddleware())
 	r.Use(lang_middleware.LocalizationMiddleware(localization.InitBundle()))
-	r.Use(tenant_middleware.TenantMiddleware(database.DB))
+	//r.Use(tenant_middleware.TenantMiddleware(database.DB))
 
 	// payload validations
 	payloadValidations()

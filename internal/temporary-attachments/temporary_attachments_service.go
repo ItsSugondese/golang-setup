@@ -27,7 +27,7 @@ func SaveTemporaryAttachmentsService(c *gin.Context) []uuid.UUID {
 	// Loop over the files
 	for _, fileHeader := range files {
 		attachments = append(attachments, fileHeader)
-		fileDetails := utils.SaveFile(fileHeader, project_module.ModuleNameEnums.TEMPORARY_ATTACHMENTS)
+		fileDetails := utils.SaveFile(fileHeader, project_module.ModuleNameEnums.TEMPORARY_ATTACHMENTS, true)
 
 		attach, err := SaveTemporaryAttachmentsRepo(TemporaryAttachments{
 			Name:     fileHeader.Filename,

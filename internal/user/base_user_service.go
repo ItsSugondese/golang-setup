@@ -58,9 +58,10 @@ func SaveBaseUserService(dto UserRequest) BaseUser {
 }
 
 func GetUserImageService(id uuid.UUID, w http.ResponseWriter) {
-	userDetails := FindUserByIdService(id)
-
-	utils.GetFileFromFilePath(*userDetails.ProfilePath, w)
+	//userDetails := FindUserByIdService(id)
+	userDetails := temporary_attachments.FindByIdService(id)
+	//utils.GetFileFromFilePath(*userDetails.ProfilePath, w)
+	utils.GetFileFromFilePath(userDetails.Location, w, true)
 
 }
 

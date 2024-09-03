@@ -10,8 +10,8 @@ type globalGinContext struct {
 
 var GlobalGinContext *globalGinContext
 
-func NewGlobalGinContext(context *gin.Context) {
+func NewGlobalGinContext() {
 	GlobalGinContext = &globalGinContext{
-		Context: context,
+		Context: nil,
 	}
 }
