@@ -149,29 +149,29 @@ func GetFileFromFilePath(filePath string, w http.ResponseWriter, fromBucket bool
 }
 
 // responsible for copying file from one path to another. will primiralrly be used to copy from temporary file to actual file path
-func CopyFileToServer(filePath string, fileToPath string) string {
-	fileName := filepath.Base(filePath)
-	currentTime := time.Now()
-
-	// Format the date as YYYY-MM-DD
-	date := currentTime.Format("2006-01-02")
-	fileTo := filepath.Join(filepathconstants.UploadDir, filepathconstants.FilePathMappings[fileToPath].Location, date)
-
-	overallToPath := filepath.Join(fileTo, fileName)
-	// Create the directory if it doesn't exist
-	err := os.MkdirAll(fileTo, os.ModePerm)
-	if err != nil {
-		panic("Failed to create directory: " + err.Error())
-	}
-
-	// Copy the file
-	err = copyFile(filePath, overallToPath)
-	if err != nil {
-		panic("Failed to copy the file: " + err.Error())
-	}
-
-	return overallToPath
-}
+//func CopyFileToServer(filePath string, fileToPath string) string {
+//	fileName := filepath.Base(filePath)
+//	currentTime := time.Now()
+//
+//	// Format the date as YYYY-MM-DD
+//	date := currentTime.Format("2006-01-02")
+//	fileTo := filepath.Join(filepathconstants.UploadDir, filepathconstants.FilePathMappings[fileToPath].Location, date)
+//
+//	overallToPath := filepath.Join(fileTo, fileName)
+//	// Create the directory if it doesn't exist
+//	err := os.MkdirAll(fileTo, os.ModePerm)
+//	if err != nil {
+//		panic("Failed to create directory: " + err.Error())
+//	}
+//
+//	// Copy the file
+//	err = copyFile(filePath, overallToPath)
+//	if err != nil {
+//		panic("Failed to copy the file: " + err.Error())
+//	}
+//
+//	return overallToPath
+//}
 
 // copyFile copies a file from src to dst
 func copyFile(src, dst string) error {
@@ -301,4 +301,70 @@ func GetFileFromBucketFilePath(filePath string, w http.ResponseWriter) {
 		panic("Failed to write file to response")
 
 	}
+}
+
+func CopyFileToGCS(filePath string, fileToPath string) error {
+	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(ctx, time.Second*50)
+	defer cancel()
+
+	src := Uploader.Cl.Bucket(Uploader.BucketName).Object(filePath)
+	dst := Uploader.Cl.Bucket(Uploader.BucketName).Object(fileToPath)
+
+	// Open the source file for reading
+	srcReader, err := src.NewReader(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to create source reader: %v", err)
+	}
+	defer srcReader.Close()
+
+	// Open the destination file for writing
+	dstWriter := dst.NewWriter(ctx)
+	defer dstWriter.Close()
+
+	// Copy the file
+	if _, err := io.Copy(dstWriter, srcReader); err != nil {
+		return fmt.Errorf("failed to copy file: %v", err)
+	}
+
+	return nil
+}
+
+func CopyFileToServer(filePath string, fileToPath string, toBucket bool) string {
+	var overallToPath string
+
+	fileName := filepath.Base(filePath)
+	currentTime := time.Now()
+	date := currentTime.Format("2006-01-02")
+
+	if toBucket {
+
+		// Format the date as YYYY-MM-DD
+		overallToPath = filepath.Join(filepathconstants.FilePathMappings[fileToPath].Location, date, fileName)
+
+		// Copy the file
+		err := CopyFileToGCS(filePath, overallToPath)
+		if err != nil {
+			panic("Failed to copy the file: " + err.Error())
+		}
+
+	} else {
+		fileTo := filepath.Join(filepathconstants.UploadDir, filepathconstants.FilePathMappings[fileToPath].Location, date)
+
+		overallToPath = filepath.Join(fileTo, fileName)
+
+		// Create the directory if it doesn't exist
+		err := os.MkdirAll(fileTo, os.ModePerm)
+		if err != nil {
+			panic("Failed to create directory: " + err.Error())
+		}
+
+		// Copy the file
+		err = copyFile(filePath, overallToPath)
+		if err != nil {
+			panic("Failed to copy the file: " + err.Error())
+		}
+	}
+
+	return overallToPath
 }

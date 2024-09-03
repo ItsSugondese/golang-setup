@@ -27,7 +27,8 @@ func SaveBaseUserService(dto UserRequest) BaseUser {
 	}
 	if dto.FileId != uuid.Nil {
 		attachment := temporary_attachments.FindByIdService(dto.FileId)
-		filePath := utils.CopyFileToServer(attachment.Location, project_module.ModuleNameEnums.BASE_USER)
+		//filePath := utils.CopyFileToServer(attachment.Location, project_module.ModuleNameEnums.BASE_USER)
+		filePath := utils.CopyFileToServer(attachment.Location, project_module.ModuleNameEnums.BASE_USER, false)
 		response.ProfilePath = &filePath
 	}
 
